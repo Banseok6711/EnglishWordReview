@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,23 +27,25 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import util.Random;
-import util.WorkTask;
-import util.WorkTask2;
+import util.TimeCount;
+import util.SetNextWord;
+
 import common.Sentence;
+
 import execl.ExelData;
 
 public class Gui extends JFrame {
+
 	ExelData exel = new ExelData();
 	private ArrayList<Sentence> list;
 	private ArrayList<Sentence> total_List;
 	private String answer_word;
-	WorkTask work;
+	TimeCount work;
 
-	private static int wordNum = 1;
+	private static int wordIndex = 1;
 	int hitNum;
 	int falseNum;
 	int remainNum;
@@ -408,45 +409,30 @@ public class Gui extends JFrame {
 		jl_plus.addMouseListener(new MouseEventClass(4));
 		jl_store.addMouseListener(new MouseEventClass(5));
 
-		// keyEvent 등록
-		jt_english2.addKeyListener(new KeyListener() {
-			
-			@Override
-			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void keyPressed(KeyEvent e) {
-				int key = e.getKeyCode();
-				
-				switch(key){
-					case KeyEvent.VK_RIGHT:
-						nextWordSetting();
-						jt_english2.setText("");
-//						System.out.println("RIGHT KEY preesed");
-						
-						break;
-				}
-				
-			}
-		});
 		
+	}
+	
+	
+	public void start() {
+		// TODO Auto-generated method stub
 		
+		//복습하기 이벤트 세팅
+		reviewPageEvent();
+		
+		//전체보기 이벤트 세팅 
+		showAllWordPageEvent();
+		
+		//문제수 설정
+		settingNumOfWords(total_List);
 
-		eventSetting2();
-		eventSetting3();
-
+		// list를 순서를 랜덤으로 변경
+		Random ran = new Random();
+		ran.makeRandomList(total_List);
+		
 	}
 
-	public void settingChoice(ArrayList<Sentence> list) {
+	//문제수 설정
+	public void settingNumOfWords(ArrayList<Sentence> list) {
 		int temp = list.size() / 10;
 		for (int i = 1; i <= temp; i++) {
 			choice.add(i * 10 + "");
@@ -454,15 +440,13 @@ public class Gui extends JFrame {
 		choice.add(list.size() + "");
 	}
 
-	// Event Handler
-	public void eventSetting2() {
-
-		// choice setting
+	
+	public void reviewPageEvent() {
 
 		jb_stop.setEnabled(false);
 
 		// final Timer timer =new Timer();
-		work = new WorkTask(jl_timer);
+		work = new TimeCount(jl_timer);
 		/* Second Page */
 		jb_play.addActionListener(new ActionListener() {
 			@Override
@@ -480,15 +464,15 @@ public class Gui extends JFrame {
 				jb_stop.setEnabled(true);
 				jb_reset.setEnabled(false);
 
-				String preword = list.get(wordNum).getKorean();
-				String curword = list.get(wordNum - 1).getKorean();
+				String preword = list.get(wordIndex).getKorean();
+				String curword = list.get(wordIndex - 1).getKorean();
 
 				jl_prev_word.setText(preword);
 				jl_cur_word.setText(curword);
 
-				answer_word = list.get(wordNum - 1).getEnglish();
+				answer_word = list.get(wordIndex - 1).getEnglish();
 
-				wordNum++;
+				wordIndex++;
 				// 타이머 작동 시키기
 
 				work.timer.schedule(work, 0, 1000);
@@ -527,7 +511,7 @@ public class Gui extends JFrame {
 				hitNum = 0;
 				falseNum = 0;
 				remainNum = 0;
-				wordNum = 1;
+				wordIndex = 1;
 
 				jl_hitNum.setText(hitNum + "");
 				jl_falseNum.setText(falseNum + "");
@@ -540,7 +524,7 @@ public class Gui extends JFrame {
 				// 타이머 작동 시키기
 				jl_timer.setText("0");
 				;
-				work = new WorkTask(jl_timer);
+				work = new TimeCount(jl_timer);
 
 			}
 		});
@@ -599,17 +583,41 @@ public class Gui extends JFrame {
 			}
 		});
 
+		// keyEvent 등록
+		jt_english2.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int key = e.getKeyCode();
+
+				switch (key) {
+				case KeyEvent.VK_RIGHT:
+					nextWordSetting();
+					jt_english2.setText("");
+					break;
+				}
+
+			}
+		});
+
 	}
 
-	// 3Page event
-	public void eventSetting3() {
+	// 모든단어보기 페이지 이벤트 
+	public void showAllWordPageEvent() {
 		jb3_play.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
 				jb3_play.setEnabled(false);
-				// System.out.println("totalList.size:"+total_List.size());
+				
 				int timeInterval = 2000;
 				if (jr3_speed1.isSelected()) {
 					timeInterval = 1000;
@@ -619,8 +627,8 @@ public class Gui extends JFrame {
 					timeInterval = 3000;
 				}
 
-				WorkTask2 work2 = new WorkTask2(jl3_korean, jl3_english,
-						total_List, jl3_currentIndex , jb3_play);
+				SetNextWord work2 = new SetNextWord(jl3_korean, jl3_english,
+						total_List, jl3_currentIndex, jb3_play);
 				Timer timer = new Timer();
 				timer.schedule(work2, 0, timeInterval);
 
@@ -649,8 +657,8 @@ public class Gui extends JFrame {
 		String preword = "";
 		String curword = "";
 
-		remainNum = list.size() - wordNum + 1;
-		// There is no reaminNum , then game is finished
+		remainNum = list.size() - wordIndex + 1;
+		// When there is no reaminNum , then game is finished
 		if (remainNum == 0) {
 			jl_remainWordNum.setText("0");
 			jb_stop.doClick();
@@ -658,24 +666,24 @@ public class Gui extends JFrame {
 
 		}
 
-		if (wordNum == list.size()) {
-			curword = list.get(wordNum - 1).getKorean();
-		} else if (wordNum < list.size()) { // before: else{
-			preword = list.get(wordNum).getKorean();
-			curword = list.get(wordNum - 1).getKorean();
+		if (wordIndex == list.size()) {
+			curword = list.get(wordIndex - 1).getKorean();
+		} else if (wordIndex < list.size()) { // before: else{
+			preword = list.get(wordIndex).getKorean();
+			curword = list.get(wordIndex - 1).getKorean();
 		}
 
-		if (wordNum < list.size()) {
+		if (wordIndex < list.size()) {
 			jl_prev_word.setText(preword);
 			jl_cur_word.setText(curword);
 		} else {
 			jl_prev_word.setText("No Next Word...");
 			jl_cur_word.setText(curword);
 		}
-		answer_word = list.get(wordNum - 1).getEnglish();
+		answer_word = list.get(wordIndex - 1).getEnglish();
 
 		jl_remainWordNum.setText(remainNum + "");
-		wordNum++;
+		wordIndex++;
 	}
 
 	/* 정답체크 메소드 */
@@ -748,14 +756,8 @@ public class Gui extends JFrame {
 				jp_center.add(jp_content_third);
 				jp_center.revalidate();
 				// plus 기호
-			} else if (num == 4) {
-
-			} else if (num == 5) {
-
-			}
-
+			} 
 		}
-
 		@Override
 		public void mouseEntered(MouseEvent e) {
 			// TODO Auto-generated method stub
@@ -778,12 +780,14 @@ public class Gui extends JFrame {
 
 	}
 
-	public ArrayList<Sentence> getList() {
+/*	public ArrayList<Sentence> getList() {
 		return list;
-	}
-
+	}*/
+/*
 	public void setList(ArrayList<Sentence> list) {
 		this.list = list;
 	}
+*/
+	
 
 }

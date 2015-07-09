@@ -1,6 +1,5 @@
 package execl;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -22,9 +21,9 @@ public class ExelData implements ExelInterface{
 	static ArrayList<Sentence> list =new ArrayList<Sentence>();
 	
 	public XSSFWorkbook workbook;
-	public ExelData() {
+	private String exelFilePath="D:\\banseok\\프로젝트\\자바프로젝트(영어문장공부)\\프로젝트 보고서\\EnglishSentence.xlsx";
 	
-		
+	public ExelData() {		
 	}
 
 	@Override
@@ -33,7 +32,7 @@ public class ExelData implements ExelInterface{
 		FileInputStream fis;
 		
 		try {
-			fis = new FileInputStream("D:\\banseok\\프로젝트\\자바프로젝트(영어문장공부)\\프로젝트 보고서\\EnglishSentence.xlsx");
+			fis = new FileInputStream(exelFilePath);
 			workbook = new XSSFWorkbook(fis);
 						
 
@@ -80,8 +79,10 @@ public class ExelData implements ExelInterface{
 	//Total Data Store
 	@Override
 	public void storeData() {
+		FileOutputStream fos = null;
+		Workbook workbook2;
 		try {			
-			Workbook workbook2 = new SXSSFWorkbook();
+			workbook2 = new SXSSFWorkbook();
 			SXSSFSheet sheet = (SXSSFSheet)workbook2.createSheet("Sheet1");
 			
 //			int rows=sheet.getPhysicalNumberOfRows();
@@ -93,17 +94,17 @@ public class ExelData implements ExelInterface{
 				row.createCell(1).setCellValue(list.get(i).getKorean());
 			}
 						
-			FileOutputStream fos = new FileOutputStream("D:\\banseok\\프로젝트\\자바프로젝트(영어문장공부)\\프로젝트 보고서\\EnglishSentence.xlsx");
+			fos = new FileOutputStream(exelFilePath);
 			workbook2.write(fos); 
 			
+			workbook2.close();
 			fos.close();
 			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		
+		}		
 	}
 
 	
